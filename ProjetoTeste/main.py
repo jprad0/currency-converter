@@ -2,28 +2,77 @@ import requests
 import customtkinter as ctk
 from tkinter import messagebox
 
+
+
 def currency_converter_button():
     coin1 = currency1.get()
 
     coin2 = currency2.get()
 
+    try:
+        url_api = f'https://economia.awesomeapi.com.br/json/last/{coin1}-{coin2}'
 
-    url_api = f'https://economia.awesomeapi.com.br/json/last/{coin1}-{coin2}'
+         
+        response = requests.get(url_api)
+        response.raise_for_status()  
+        
+        apiGet = response.json()
+        print("API Response:", apiGet)  
 
-    apiGet = requests.get(url_api).json()
+        
+        apiKey = f"{coin1}{coin2}"
+        print(f"Searching for: {apiKey}")  
+       
+        if apiKey in apiGet:
+            currency_data = apiGet[apiKey]
 
-    print(apiGet)
+            coin2Value = float(currency_data['ask'])  # Sell price
+            variation = float(currency_data['varBid'])  # Variation
+            max = float(currency_data['high'])     # Max of day
+            min = float(currency_data['low'])      # Min of day
+            coin1Value = float(currency_data['bid'])  # Buy price
 
-    apiKey = f"{coin1}-{coin2}"
+           
+            message_text = (f"Buy Price: {coin1Value:.4f}\n"
+                           f"Sell price: {coin2Value:.4f}\n"
+                           f"Variation: {variation}\n"
+                           f"Max of day: {max:.4f}\n"
+                           f"Min of day: {min:.4f}")
+            
+           
+            app.update()
+            
+            messagebox.showinfo(
+                title="Currency Converter result", 
+                message=message_text,
+                parent=app
+            )
+        else:
+            messagebox.showerror(
+                "Error",
+                f"Currency not found!\nTry search: {apiKey}\nAvailable: {list(apiGet.keys())}",
+                parent=app
+            )
+    except requests.exceptions.RequestException as e:
+        messagebox.showerror(
+            "connection error",
+            f"Unable to connect to the API:\n{e}",
+            parent=app
+        )
+    except KeyError as e:
+        messagebox.showerror(
+            "Data error",
+            f"field not found in the API response: {e}",
+            parent=app
+        )
+    except Exception as e:
+        messagebox.showerror(
+            "unexpected error",
+            f"An error occurred.:\n{type(e).__name__}: {e}",
+            parent=app
+        )
+      
 
-    if apiKey in apiGet:
-        dados_moeda = apiGet[apiKey]
-
-        coin1Value = float(dados_moeda['bid'])  # Buy price
-        coin2Value = float(dados_moeda['ask'])  # Sell price
-        variacao = float(dados_moeda['varBid'])  # Variation
-        maximo = float(dados_moeda['high'])     # Max of day
-        minimo = float(dados_moeda['low'])      # Min of day
 
 
 
@@ -38,7 +87,7 @@ currency1 = ctk.CTkComboBox(
     app,
     values=["USD", "BRL", "EUR", "JPY", "GBP","CAD"]
 )
-currency1.set("USD") 
+currency1.set("BRL") 
 currency1.pack(pady=10)
 
 currency2 = ctk.CTkComboBox(
@@ -53,4 +102,9 @@ button.pack(pady=10)
 
 
 
+
+
 app.mainloop()
+
+
+
