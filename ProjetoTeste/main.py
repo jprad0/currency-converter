@@ -78,10 +78,11 @@ def currency_converter_button():
 
     # interface initialization
 app = ctk.CTk()
-app.geometry("400x400")
+app.geometry("320x250")
 app.title("Currency Converter")
 
 ctk.CTkLabel(app, text="Select Currency to convert").pack(pady=10)
+ctk.CTkLabel(app, text="If your currency is not in the options below,\n please type its name.").pack(pady=10)
 
 currency1 = ctk.CTkComboBox(
     app,
